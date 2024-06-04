@@ -1,0 +1,41 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# CDK output directory
+cdk.out/
+
+# CDK context files
+cdk.context.json
+
+# Environment variables files
+.env
+.env.*
+
+# IDE configurations
+.vscode/
+.idea/
+
+# MacOS files
+.DS_Store
+
+# Windows files
+Thumbs.db
+
+# Log files
+*.log
+
+# Temporary files
+*.tmp
