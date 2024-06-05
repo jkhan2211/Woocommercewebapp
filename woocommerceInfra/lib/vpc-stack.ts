@@ -154,5 +154,76 @@ export class DevVpcStack extends cdk.Stack {
       value: privateDataSubnet2.ref,
       exportName: "PrivateDataSubnet2",
     });
+
+    // Security Groups
+    const myIp = '142.126.82.88/32'
+
+
+    const albSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', { vpc });
+    Tags.of(albSecurityGroup).add("Name", "ALB Security Group");
+
+    albSecurityGroup.addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(80), 'SSH frm anywhere HTTP');
+    albSecurityGroup.addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(443), 'SSH frm anywhere HTTPS');
+
+
+    
+    const sshSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_SSH', { vpc });
+    Tags.of(sshSecurityGroup).add("Name", "SSH Security Group");
+
+    sshSecurityGroup.addIngressRule(ec2.Peer.ipv4(myIp), ec2.Port.tcp(22), 'SSH');
+
+
+    const webserverSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_WebServer', { 
+        vpc,
+        allowAllOutbound: true,
+        securityGroupName: 'webserverSecurityGroup' });
+    Tags.of(webserverSecurityGroup).add("Name", "Web Server Security Group");
+
+    webserverSecurityGroup.addIngressRule(albSecurityGroup,
+        ec2.Port.tcp(80),
+        'Allow HTTP traffic from ALB security group'
+    );
+    webserverSecurityGroup.addIngressRule(albSecurityGroup,
+        ec2.Port.tcp(443),
+        'Allow HTTP traffic from ALB security group'
+    );
+
+    webserverSecurityGroup.addIngressRule(sshSecurityGroup,
+        ec2.Port.tcp(22),
+        'Allow HTTP traffic from ALB security group'
+    );
+
+
+    const dbSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_DB', { 
+        vpc,
+        securityGroupName: 'dbSecurityGroup' });
+    Tags.of(dbSecurityGroup).add("Name", "Database Server Security Group");
+    
+    dbSecurityGroup.addIngressRule(sshSecurityGroup,
+        ec2.Port.tcp(3306),
+        'Allow HTTP traffic from Database security group'
+    );
+
+
+    const efsSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_EFS', { 
+        vpc,
+        securityGroupName: 'efsSecurityGroup' });
+    Tags.of(efsSecurityGroup).add("Name", "EFS Security Group");
+
+    efsSecurityGroup.addIngressRule(webserverSecurityGroup,
+        ec2.Port.tcp(2049),
+        'Allow HTTP traffic from EFS security group'
+    );
+
+    efsSecurityGroup.addIngressRule(efsSecurityGroup,
+        ec2.Port.tcp(2049),
+        'Allow HTTP traffic from EFS security group'
+    );
+
+    efsSecurityGroup.addIngressRule(sshSecurityGroup,
+        ec2.Port.tcp(22),
+        'Allow HTTP traffic from EFS security group'
+    );
+
   }
 }

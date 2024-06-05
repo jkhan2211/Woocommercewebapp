@@ -111,5 +111,10 @@ export class TierOneStack extends cdk.Stack {
         routeTableId: routeTable_2.ref,
       }
     );
+
+
+    // Todo: Bastion Host
+
+    // Todo: Load Balancer
   }
 }
