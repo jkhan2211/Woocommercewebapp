@@ -16,6 +16,10 @@ export class DevVpcStack extends cdk.Stack {
       enableDnsSupport: true,
     });
 
+    new cdk.CfnOutput(this, 'VPCOutput', {
+        value: vpc.vpcId,
+        exportName: 'Vpc'
+      });
     // Create the Internet Gateway
     const internetGateway = new ec2.CfnInternetGateway(this, 'InternetGateway');
 
@@ -35,6 +39,12 @@ export class DevVpcStack extends cdk.Stack {
     });
     Tags.of(publicSubnet1).add('Name', 'PublicSubnet1');
 
+    // output for tier one usage
+    new cdk.CfnOutput(this, 'PublicSubnet1Output', {
+        value: publicSubnet1.ref,
+        exportName: 'PublicSubnet1'
+      });
+
     const publicSubnet2 = new ec2.CfnSubnet(this, 'PublicSubnet2', {
       vpcId: vpc.vpcId,
       cidrBlock: '10.0.1.0/24',
@@ -42,7 +52,10 @@ export class DevVpcStack extends cdk.Stack {
       mapPublicIpOnLaunch: true,
     });
     Tags.of(publicSubnet2).add('Name', 'PublicSubnet2');    
-
+    new cdk.CfnOutput(this, 'PublicSubnet2Output', {
+        value: publicSubnet2.ref,
+        exportName: 'PublicSubnet2'
+      });
     // Create a single route table
     const routeTable = new ec2.CfnRouteTable(this, 'PublicRouteTable', {
       vpcId: vpc.vpcId,
@@ -83,6 +96,10 @@ export class DevVpcStack extends cdk.Stack {
       });
       Tags.of(privateAppSubnet1).add('Name', 'Private App Subnet 1');
 
+      new cdk.CfnOutput(this, 'PrivateAppSubnet1Output', {
+        value: privateAppSubnet1.ref,
+        exportName: 'PrivateAppSubnet1'
+      });
 
       const privateAppSubnet2 = new ec2.CfnSubnet(this, 'Private App Subnet 2', {
         vpcId: vpc.vpcId,
@@ -92,6 +109,12 @@ export class DevVpcStack extends cdk.Stack {
       });
       Tags.of(privateAppSubnet2).add('Name', 'Private App Subnet 2');
 
+      new cdk.CfnOutput(this, 'PrivateAppSubnet2Output', {
+        value: privateAppSubnet2.ref,
+        exportName: 'PrivateAppSubnet2'
+      });
+
+
       const privateDataSubnet1 = new ec2.CfnSubnet(this, 'Private Data Subnet 1', {
         vpcId: vpc.vpcId,
         cidrBlock: '10.0.4.0/24',
@@ -99,7 +122,10 @@ export class DevVpcStack extends cdk.Stack {
         mapPublicIpOnLaunch: true,
       });
       Tags.of(privateDataSubnet1).add('Name', 'Private Data Subnet 1');
-
+      new cdk.CfnOutput(this, 'PrivateDataSubnet1Output', {
+        value: privateDataSubnet1.ref,
+        exportName: 'PrivateDataSubnet1'
+      });
 
       const privateDataSubnet2 = new ec2.CfnSubnet(this, 'Private Data Subnet 2', {
         vpcId: vpc.vpcId,
@@ -107,8 +133,12 @@ export class DevVpcStack extends cdk.Stack {
         availabilityZone: cdk.Stack.of(this).availabilityZones[0],
         mapPublicIpOnLaunch: true,
       });
-      Tags.of(privateDataSubnet2).add('Name', 'Private Data Subnet 1');
-  
+      Tags.of(privateDataSubnet2).add('Name', 'Private Data Subnet 2');
+      
+      new cdk.CfnOutput(this, 'PrivateDataSubnet2Output', {
+        value: privateDataSubnet2.ref,
+        exportName: 'PrivateDataSubnet2'
+      });
   
  
   }
