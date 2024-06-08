@@ -13,7 +13,7 @@ export class WoocommerceInfraStack extends cdk.Stack {
   constructor(scope: cdk.App, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
     const app = new cdk.App();
-    //-- 1. Deploy vpc stack
+    //-- 1. Deploy vpc stack --
     const vpcStack = new DevVpcStack(app, 'DevVpcStack');
 
     //-- 2. Deploy rds stack --
