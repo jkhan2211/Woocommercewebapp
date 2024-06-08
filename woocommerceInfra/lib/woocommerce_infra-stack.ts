@@ -16,13 +16,13 @@ export class WoocommerceInfraStack extends cdk.Stack {
     //-- 1. Deploy vpc stack
     const vpcStack = new DevVpcStack(app, 'DevVpcStack');
 
-    //-- 2. Deploy rds stack
+    //-- 2. Deploy rds stack --
     const rdsStack = new RdsStack(app, 'RdsStack');
 
-    //-- 3. Deploy efs stack
+    //-- 3. Deploy efs stack --
     const efsStack = new EfsStack(app, 'EfsStack')
 
-    //-- 4. Deploy ec2 stack
+    //-- 4. Deploy ec2 stack --
     const ec2Stack = new Ec2Stack(app, 'Ec2Stack')
 
 
