@@ -7,7 +7,7 @@ export class DevVpcStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    // Create the VPC
+    // -------------Create the VPC-------------
     const vpc = new ec2.Vpc(this, "DevVPC", {
       cidr: "10.0.0.0/16",
       subnetConfiguration: [], // Do not create any subnets automatically
@@ -19,19 +19,16 @@ export class DevVpcStack extends cdk.Stack {
       value: vpc.vpcId,
       exportName: "Vpc",
     });
+
     // Create the Internet Gateway
     const internetGateway = new ec2.CfnInternetGateway(this, "InternetGateway");
+    Tags.of(internetGateway).add("Name", "Dev Internet Gateway");
 
     // Attach the internet gateway
-
-    const cfnVPCGatewayAttachment = new ec2.CfnVPCGatewayAttachment(
-      this,
-      "MyCfnVPCGatewayAttachment",
-      {
-        vpcId: vpc.vpcId,
-        internetGatewayId: internetGateway.ref,
-      }
-    );
+    new ec2.CfnVPCGatewayAttachment(this, "MyCfnVPCGatewayAttachment", {
+      vpcId: vpc.vpcId,
+      internetGatewayId: internetGateway.ref,
+    });
 
     // Create public subnets
     const publicSubnet1 = new ec2.CfnSubnet(this, "PublicSubnet1", {
@@ -40,25 +37,25 @@ export class DevVpcStack extends cdk.Stack {
       availabilityZone: cdk.Stack.of(this).availabilityZones[0],
       mapPublicIpOnLaunch: true,
     });
-    Tags.of(publicSubnet1).add("Name", "PublicSubnet1");
+    Tags.of(publicSubnet1).add("Name", "PublicSubnet AZ1");
 
-    // output for tier one usage
-    new cdk.CfnOutput(this, "PublicSubnet1Output", {
+    new cdk.CfnOutput(this, "PublicSubnetAZ1Output", {
       value: publicSubnet1.ref,
-      exportName: "PublicSubnet1",
+      exportName: "PublicSubnetAZ1",
     });
 
-    const publicSubnet2 = new ec2.CfnSubnet(this, "PublicSubnet2", {
+    const publicSubnet2 = new ec2.CfnSubnet(this, "PublicSubnet AZ2", {
       vpcId: vpc.vpcId,
       cidrBlock: "10.0.1.0/24",
       availabilityZone: cdk.Stack.of(this).availabilityZones[1],
       mapPublicIpOnLaunch: true,
     });
-    Tags.of(publicSubnet2).add("Name", "PublicSubnet2");
-    new cdk.CfnOutput(this, "PublicSubnet2Output", {
+    Tags.of(publicSubnet2).add("Name", "PublicSubnet AZ2");
+    new cdk.CfnOutput(this, "PublicSubnetAZ2Output", {
       value: publicSubnet2.ref,
-      exportName: "PublicSubnet2",
+      exportName: "PublicSubnetAZ2",
     });
+
     // Create a single route table
     const routeTable = new ec2.CfnRouteTable(this, "PublicRouteTable", {
       vpcId: vpc.vpcId,
@@ -66,7 +63,7 @@ export class DevVpcStack extends cdk.Stack {
     Tags.of(routeTable).add("Name", "Public Route Table");
 
     // Add public route to the route table
-    const publicRoute = new ec2.CfnRoute(this, "PublicRoute", {
+    new ec2.CfnRoute(this, "PublicRoute", {
       routeTableId: routeTable.ref,
       destinationCidrBlock: "0.0.0.0/0",
       gatewayId: internetGateway.ref,
@@ -91,139 +88,222 @@ export class DevVpcStack extends cdk.Stack {
       }
     );
 
-    // to deal with CDK creating a route table for public subnet 2
-    publicSubnet2.node.tryRemoveChild("PublicSubnet2RouteTableAssociation");
-    publicSubnet2.node.tryRemoveChild("PublicRouteTable");
-
-    // Create 4 Private subnets
-    const privateAppSubnet1 = new ec2.CfnSubnet(this, "Private App Subnet 1", {
+    // -----------Create Private subnets-------------
+    const privateAppSubnet1 = new ec2.CfnSubnet(this, "PrivateAppSubnet1", {
       vpcId: vpc.vpcId,
       cidrBlock: "10.0.2.0/24",
       availabilityZone: cdk.Stack.of(this).availabilityZones[0],
-      mapPublicIpOnLaunch: true,
+      mapPublicIpOnLaunch: false,
     });
-    Tags.of(privateAppSubnet1).add("Name", "Private App Subnet 1");
+    Tags.of(privateAppSubnet1).add("Name", "Private App Subnet AZ1");
 
     new cdk.CfnOutput(this, "PrivateAppSubnet1Output", {
       value: privateAppSubnet1.ref,
       exportName: "PrivateAppSubnet1",
     });
 
-    const privateAppSubnet2 = new ec2.CfnSubnet(this, "Private App Subnet 2", {
+    const privateAppSubnet2 = new ec2.CfnSubnet(this, "PrivateAppSubnet2", {
       vpcId: vpc.vpcId,
       cidrBlock: "10.0.3.0/24",
-      availabilityZone: cdk.Stack.of(this).availabilityZones[0],
-      mapPublicIpOnLaunch: true,
+      availabilityZone: cdk.Stack.of(this).availabilityZones[1],
+      mapPublicIpOnLaunch: false,
     });
-    Tags.of(privateAppSubnet2).add("Name", "Private App Subnet 2");
+    Tags.of(privateAppSubnet2).add("Name", "Private App Subnet AZ2");
 
     new cdk.CfnOutput(this, "PrivateAppSubnet2Output", {
       value: privateAppSubnet2.ref,
       exportName: "PrivateAppSubnet2",
     });
 
-    const privateDataSubnet1 = new ec2.CfnSubnet(
-      this,
-      "Private Data Subnet 1",
-      {
-        vpcId: vpc.vpcId,
-        cidrBlock: "10.0.4.0/24",
-        availabilityZone: cdk.Stack.of(this).availabilityZones[0],
-        mapPublicIpOnLaunch: true,
-      }
-    );
-    Tags.of(privateDataSubnet1).add("Name", "Private Data Subnet 1");
+    const privateDataSubnet1 = new ec2.CfnSubnet(this, "PrivateDataSubnet1", {
+      vpcId: vpc.vpcId,
+      cidrBlock: "10.0.4.0/24",
+      availabilityZone: cdk.Stack.of(this).availabilityZones[0],
+      mapPublicIpOnLaunch: false,
+    });
+    Tags.of(privateDataSubnet1).add("Name", "Private Data Subnet AZ1");
     new cdk.CfnOutput(this, "PrivateDataSubnet1Output", {
       value: privateDataSubnet1.ref,
       exportName: "PrivateDataSubnet1",
     });
 
-    const privateDataSubnet2 = new ec2.CfnSubnet(
-      this,
-      "Private Data Subnet 2",
-      {
-        vpcId: vpc.vpcId,
-        cidrBlock: "10.0.5.0/24",
-        availabilityZone: cdk.Stack.of(this).availabilityZones[0],
-        mapPublicIpOnLaunch: true,
-      }
-    );
-    Tags.of(privateDataSubnet2).add("Name", "Private Data Subnet 2");
+    const privateDataSubnet2 = new ec2.CfnSubnet(this, "PrivateDataSubnet2", {
+      vpcId: vpc.vpcId,
+      cidrBlock: "10.0.5.0/24",
+      availabilityZone: cdk.Stack.of(this).availabilityZones[1],
+      mapPublicIpOnLaunch: false,
+    });
+    Tags.of(privateDataSubnet2).add("Name", "Private Data Subnet AZ2");
 
     new cdk.CfnOutput(this, "PrivateDataSubnet2Output", {
       value: privateDataSubnet2.ref,
       exportName: "PrivateDataSubnet2",
     });
 
-    // Security Groups
-    const myIp = '142.126.82.88/32'
+    // Create Elastic IPs for the NAT Gateways
+    const eip1 = new ec2.CfnEIP(this, "NATGatewayEIP1");
+    // const eip2 = new ec2.CfnEIP(this, "NATGatewayEIP2");
 
+    // -- Tier One -- 
+    //---------Create NAT Gateways (1)--------------
+    const natGateway1 = new ec2.CfnNatGateway(this, "NATGateway1", {
+      subnetId: publicSubnet1.ref,
+      allocationId: eip1.attrAllocationId,
+      connectivityType: "public",
+      tags: [{ key: "Name", value: "NAT Gateway AZ1" }],
+    });
 
-    const albSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup', { vpc });
+    //---------Create Private Route Table (1)--------------
+    const routeTable1 = new ec2.CfnRouteTable(this, "PrivateRouteTableAZ1", {
+      vpcId: vpc.vpcId,
+      tags: [{ key: "Name", value: "Private Route Table AZ1" }],
+    });
+    // Add routes to Route Tables
+    new ec2.CfnRoute(this, "PrivateRouteAZ1", {
+      routeTableId: routeTable1.ref,
+      destinationCidrBlock: "0.0.0.0/0",
+      natGatewayId: natGateway1.ref,
+    });
+
+    // Associate Route Tables with Subnets
+    new ec2.CfnSubnetRouteTableAssociation(
+      this,
+      "PrivateAppSubnet1Association",
+      {
+        subnetId: privateAppSubnet1.ref,
+        routeTableId: routeTable1.ref,
+      }
+    );
+
+    new ec2.CfnSubnetRouteTableAssociation(
+      this,
+      "PrivateDataSubnet1Association",
+      {
+        subnetId: privateDataSubnet1.ref,
+        routeTableId: routeTable1.ref,
+      }
+    );
+
+    const eip2 = new ec2.CfnEIP(this, "NATGatewayEIP2");
+
+    //---------Create NAT Gateways (2)--------------
+    const natGateway2 = new ec2.CfnNatGateway(this, "NATGateway2", {
+      subnetId: publicSubnet2.ref,
+      allocationId: eip2.attrAllocationId,
+      connectivityType: "public",
+      tags: [{ key: "Name", value: "NAT Gateway AZ2" }],
+    });
+
+    //---------Create Private Route Table (2)--------------
+    const routeTable2 = new ec2.CfnRouteTable(this, "PrivateRouteTableAZ2", {
+      vpcId: vpc.vpcId,
+      tags: [{ key: "Name", value: "Private Route Table AZ2" }],
+    });
+
+    new ec2.CfnRoute(this, "PrivateRouteAZ2", {
+      routeTableId: routeTable2.ref,
+      destinationCidrBlock: "0.0.0.0/0",
+      natGatewayId: natGateway2.ref,
+    });
+
+    new ec2.CfnSubnetRouteTableAssociation(
+      this,
+      "PrivateAppSubnet2Association",
+      {
+        subnetId: privateAppSubnet2.ref,
+        routeTableId: routeTable2.ref,
+      }
+    );
+
+    new ec2.CfnSubnetRouteTableAssociation(
+      this,
+      "PrivateDataSubnet2Association",
+      {
+        subnetId: privateDataSubnet2.ref,
+        routeTableId: routeTable2.ref,
+      }
+    );
+
+    // ---------Security Groups-----------
+    const albSecurityGroup = new ec2.SecurityGroup(this, "ALBSecurityGroup", {
+      vpc,
+    });
     Tags.of(albSecurityGroup).add("Name", "ALB Security Group");
 
-    albSecurityGroup.addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(80), 'SSH frm anywhere HTTP');
-    albSecurityGroup.addIngressRule(ec2.Peer.ipv4('0.0.0.0/0'), ec2.Port.tcp(443), 'SSH frm anywhere HTTPS');
+    new cdk.CfnOutput(this, "albSecurityGroup", {
+      value: albSecurityGroup.securityGroupId,
+      exportName: "ALBSecurityGroup",
+    });
 
+    albSecurityGroup.addIngressRule(
+      ec2.Peer.ipv4("0.0.0.0/0"),
+      ec2.Port.tcp(80),
+      "Allow HTTP traffic from anywhere"
+    );
+    albSecurityGroup.addIngressRule(
+      ec2.Peer.ipv4("0.0.0.0/0"),
+      ec2.Port.tcp(443),
+      "Allow HTTPS traffic from anywhere"
+    );
 
-    
-    const sshSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_SSH', { vpc });
+    const sshSecurityGroup = new ec2.SecurityGroup(this, "SecurityGroup_SSH", {
+      vpc,
+    });
     Tags.of(sshSecurityGroup).add("Name", "SSH Security Group");
 
-    sshSecurityGroup.addIngressRule(ec2.Peer.ipv4(myIp), ec2.Port.tcp(22), 'SSH');
+    new cdk.CfnOutput(this, "SSHSecurityGroup", {
+      value: sshSecurityGroup.securityGroupId,
+      exportName: "SSHSecurityGroup",
+    });
 
-
-    const webserverSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_WebServer', { 
+    const webserverSecurityGroup = new ec2.SecurityGroup(
+      this,
+      "SecurityGroup_WebServer",
+      {
         vpc,
         allowAllOutbound: true,
-        securityGroupName: 'webserverSecurityGroup' });
+        securityGroupName: "webserverSecurityGroup",
+      }
+    );
     Tags.of(webserverSecurityGroup).add("Name", "Web Server Security Group");
-
-    webserverSecurityGroup.addIngressRule(albSecurityGroup,
-        ec2.Port.tcp(80),
-        'Allow HTTP traffic from ALB security group'
+    webserverSecurityGroup.addIngressRule(
+      albSecurityGroup,
+      ec2.Port.tcp(80),
+      "Allow HTTP traffic from ALB security group"
     );
-    webserverSecurityGroup.addIngressRule(albSecurityGroup,
-        ec2.Port.tcp(443),
-        'Allow HTTP traffic from ALB security group'
+    webserverSecurityGroup.addIngressRule(
+      albSecurityGroup,
+      ec2.Port.tcp(443),
+      "Allow HTTPS traffic from ALB security group"
+    );
+    webserverSecurityGroup.addIngressRule(
+      sshSecurityGroup,
+      ec2.Port.tcp(22),
+      "Allow SSH traffic from SSH security group"
     );
 
-    webserverSecurityGroup.addIngressRule(sshSecurityGroup,
-        ec2.Port.tcp(22),
-        'Allow HTTP traffic from ALB security group'
-    );
+    new cdk.CfnOutput(this, "WebServerSecurityGroup", {
+      value: webserverSecurityGroup.securityGroupId,
+      exportName: "WebServerSecurityGroup",
+    });
 
-
-    const dbSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_DB', { 
-        vpc,
-        securityGroupName: 'dbSecurityGroup' });
+    const dbSecurityGroup = new ec2.SecurityGroup(this, "SecurityGroup_DB", {
+      vpc,
+      securityGroupName: "dbSecurityGroup",
+    });
     Tags.of(dbSecurityGroup).add("Name", "Database Server Security Group");
-    
-    dbSecurityGroup.addIngressRule(sshSecurityGroup,
-        ec2.Port.tcp(3306),
-        'Allow HTTP traffic from Database security group'
+
+    dbSecurityGroup.addIngressRule(
+      sshSecurityGroup,
+      ec2.Port.tcp(3306),
+      "Allow MySQL traffic from SSH security group"
     );
 
+    new cdk.CfnOutput(this, "DbServerSecurityGroup", {
+      value: dbSecurityGroup.securityGroupId,
+      exportName: "DbServerSecurityGroup",
+    });
 
-    const efsSecurityGroup = new ec2.SecurityGroup(this, 'SecurityGroup_EFS', { 
-        vpc,
-        securityGroupName: 'efsSecurityGroup' });
-    Tags.of(efsSecurityGroup).add("Name", "EFS Security Group");
-
-    efsSecurityGroup.addIngressRule(webserverSecurityGroup,
-        ec2.Port.tcp(2049),
-        'Allow HTTP traffic from EFS security group'
-    );
-
-    efsSecurityGroup.addIngressRule(efsSecurityGroup,
-        ec2.Port.tcp(2049),
-        'Allow HTTP traffic from EFS security group'
-    );
-
-    efsSecurityGroup.addIngressRule(sshSecurityGroup,
-        ec2.Port.tcp(22),
-        'Allow HTTP traffic from EFS security group'
-    );
 
   }
 }
