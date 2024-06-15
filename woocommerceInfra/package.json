@@ -22,6 +22,7 @@
   "dependencies": {
     "@aws-cdk/aws-ec2": "^1.204.0",
     "aws-cdk-lib": "2.144.0",
+    "cdk-ec2-key-pair": "^4.0.1",
     "constructs": "^10.0.0"
   }
 }
