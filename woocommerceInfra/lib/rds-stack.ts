@@ -51,11 +51,32 @@ export class RdsStack extends cdk.Stack {
     //   removalPolicy: cdk.RemovalPolicy.DESTROY,
     // });
 
+//     // Templated secret with username and password fields
+// const templatedSecret = new secretsmanager.Secret(this, 'TemplatedSecret', {
+//   generateSecretString: {
+//     secretStringTemplate: JSON.stringify({ username: 'admin' }),
+//     generateStringKey: 'password',
+//     excludeCharacters: '/@"',
+//   },
+// });
+
+
+
+    // // Secret Manager Credentials
+    // const secret = new secretsmanager.Secret(this, 'SampleSecret', {
+    //   secretName: '/stage/credentials',
+    //   generateSecretString: {
+    //     secretStringTemplate: JSON.stringify({ username: 'admin' }),
+    //     generateStringKey: 'password',
+    //   },
+    //   encryptionKey: key,
+    // });
+
 
 
      // --------Tier Three: RDS creation--------------
 
-    const dbPassword = 'test_2024'; 
+    // const dbPassword = 'test_2024'; 
 
     const DbSecurityGroupId = cdk.Fn.importValue("DbServerSecurityGroup");
     const DbSecurityGroup = ec2.SecurityGroup.fromSecurityGroupId(this, 'DbServerSecurityGroup', DbSecurityGroupId);
@@ -73,7 +94,7 @@ export class RdsStack extends cdk.Stack {
           subnets: [privateDataSubnet1, privateDataSubnet2],
         },
       },
-      credentials: rds.Credentials.fromPassword('admin', cdk.SecretValue.plainText(dbPassword)),
+      credentials: rds.Credentials.fromGeneratedSecret('admin'),
       defaultDatabaseName: 'devrdsdb',
       instances: 1,
       removalPolicy: cdk.RemovalPolicy.DESTROY,

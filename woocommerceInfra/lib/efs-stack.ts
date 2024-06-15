@@ -35,6 +35,7 @@ export class EfsStack extends cdk.Stack {
           cdk.Fn.importValue("PublicSubnetAZ2"),
         ],
       });
+
     const efsSecurityGroup = new ec2.SecurityGroup(this, "SecurityGroup_EFS", {
         vpc,
         securityGroupName: "efsSecurityGroup",
