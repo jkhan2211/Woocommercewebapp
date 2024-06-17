@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
-import { DevVpcStack } from '../lib/vpc-stack';
-import { RdsStack } from '../lib/rds-stack';
+import { DevVpcStack } from './vpc-stack';
+import { RdsStack } from './rds-stack';
 import { EfsStack } from './efs-stack';
 import { Ec2Stack } from './ec2-stack';
 // import { TierOneStack } from './tier-one-stack';

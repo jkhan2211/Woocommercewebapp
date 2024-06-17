@@ -77,4 +77,3 @@ export class EfsStack extends cdk.Stack {
       });
   }
 }
-

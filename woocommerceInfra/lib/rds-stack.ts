@@ -39,38 +39,7 @@ export class RdsStack extends cdk.Stack {
       },
     });
 
-    // const templatedSecret = new secretsmanager.Secret(this, 'TemplatedSecret', {
-    //   description: 'Templated secret used for RDS password',
-    //   generateSecretString: {
-    //     excludePunctuation: true,
-    //     includeSpace: false,
-    //     generateStringKey: 'password',
-    //     passwordLength: 12,
-    //     secretStringTemplate: JSON.stringify({ username: 'admin' }),
-    //   },
-    //   removalPolicy: cdk.RemovalPolicy.DESTROY,
-    // });
 
-//     // Templated secret with username and password fields
-// const templatedSecret = new secretsmanager.Secret(this, 'TemplatedSecret', {
-//   generateSecretString: {
-//     secretStringTemplate: JSON.stringify({ username: 'admin' }),
-//     generateStringKey: 'password',
-//     excludeCharacters: '/@"',
-//   },
-// });
-
-
-
-    // // Secret Manager Credentials
-    // const secret = new secretsmanager.Secret(this, 'SampleSecret', {
-    //   secretName: '/stage/credentials',
-    //   generateSecretString: {
-    //     secretStringTemplate: JSON.stringify({ username: 'admin' }),
-    //     generateStringKey: 'password',
-    //   },
-    //   encryptionKey: key,
-    // });
 
 
 
